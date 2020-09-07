@@ -101,17 +101,23 @@ class RedTetris
     end
 
     #is colliding?
-    def is_stacked
-        for x in 0..@current_piece.length-1 do
-            for y in 0..@current_piece[x].length-1 do
-                if (@current_piece[x][y] != 0)
-                    if (@current_piece_y + y >= @grid_height-1)
-                        return true
-                    elsif (@grid[@current_piece_x + x][@current_piece_y + y + 1] != 0)
+    def current_piece_colliding dirX, dirY
+        x = 0
+        y = 0
+        puts(@current_piece_y)
+        puts(@current_piece_x)
+        
+        puts("Y" * 10)
+        while x < @current_piece.length do
+            while y < @current_piece[x].length do
+                if (@current_piece_y + y >= @grid_height-1) || (@grid[@current_piece_x + x + dirX][@current_piece_y + y + dirY] != 0)
+                    if (@current_piece[x][y] != 0)
                         return true
                     end
                 end
+                y += 1
             end
+            x += 1
         end
         return false
     end
@@ -166,7 +172,7 @@ class RedTetris
         end
 
         randomize_tetrimino
-        if is_stacked
+        if current_piece_colliding(0, 1)
             @gameover = true
         end
     end
@@ -198,20 +204,20 @@ class RedTetris
             return
         end
 
-        if k.key_down.left
+        if k.key_down.left && !current_piece_colliding(-1, 0)
             if @current_piece_x > 0
                 @current_piece_x -= 1
             end
         end
 
         if k.key_down.right
-            if (@current_piece_x + @current_piece.length) < @grid_width
+            if (@current_piece_x + @current_piece.length) < @grid_width && !current_piece_colliding(1, 0)
                 @current_piece_x += 1
             end
         end
 
         if k.key_down.down || k.key_held.down
-            @next_move -= 10
+                @next_move -= 10
         end
 
         if k.key_down.a
@@ -224,7 +230,7 @@ class RedTetris
 
         @next_move -= 1
         if @next_move <= 0  # drop gurl
-            if is_stacked
+            if current_piece_colliding(0, 1)
                 stack_tetrimino
             else
                 @current_piece_y += 1
